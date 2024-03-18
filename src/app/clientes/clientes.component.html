@@ -1,0 +1,32 @@
+<div class="card border-info mb-3">
+    <div class="card-header">Clientes</div>
+    <div class="card-body text-primary">
+      <h5 class="card-title">Listado de Clientes</h5>
+      <table class="table table-bordered table-stripped"> 
+     
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Email</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+          
+        <tbody>
+           <tr *ngFor="let cliente of clientes">
+            <td style="color: dodgerblue;">{{ cliente.id }}</td>
+            <td style="color: dodgerblue;">{{ cliente.nombre }}</td>
+            <td style="color: dodgerblue;">{{ cliente.apellido }}</td>
+            <td style="color: dodgerblue;">{{ cliente.email }}</td>
+            <td style="color: dodgerblue;">{{ cliente.createAt }}</td>
+      
+           </tr>
+        </tbody>
+      </table>
+    </div>
+</div>
+     
+    
+  

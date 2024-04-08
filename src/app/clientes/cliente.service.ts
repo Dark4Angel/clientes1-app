@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
+import { formatDate, DatePipe} from '@angular/common';
+//import localeES from '@angular/common/locales/es-PE';
 import { CLIENTES } from './clientes.json';
 import { Cliente } from './cliente';
 //import { Observable } from 'rxjs';
 import { of, Observable, throwError } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
-import {map, catchError} from 'rxjs/operators';
+import {map, catchError, tap} from 'rxjs/operators';
 import Swal from 'sweetalert2';
 //import { Error } from 'console';
 import { Router } from '@angular/router';
@@ -20,29 +22,73 @@ export class ClienteService {
 
   constructor(private http: HttpClient, private router: Router) { }
   
-  getClientes(): Observable<Cliente[]> {
+  getClientes(page: number): Observable<any> {
+    return this.http.get(this.urlEndPoint + '/page/' + page).pipe(
+      tap(( response: any)  => {
+        console.log('ClienteService: tap 1');
+        (response.content as Cliente[]).forEach(cliente => {
+          console.log(cliente.nombre);
+        });
+       
+      }),
+
+      map((response: any) => {
+        (response.content as Cliente[]).forEach(cliente => {
+          cliente.nombre = cliente.nombre.toUpperCase();
+
+                  
+          //let datePipe = new DatePipe('es');
+          // cliente.createAt = datePipe.transform(cliente.createAt, 'dd/MM/yyyy');
+          //cliente.createAt =  formatDate(cliente.createAt, 'EEEE dd, MMMM yyyy', 'es-PE');
+          // cliente.createAt =  formatDate(cliente.createAt, 'EEEE dd, MMMM yyyy', 'en-US');
+          return cliente;
+        });
+        return response;
+      }),
+    
+    tap(response  => {
+      console.log('ClienteService: tap 2');
+      (response.content as Cliente[]).forEach(cliente => {
+        console.log(cliente.nombre);
+
+      });
+      
+    })
+  );
+}
+        
+
     //return of (CLIENTES);
     //return this.http.get<Cliente[]>(this.urlEndPoint);
 /*     return this.http.get(this.urlEndPoint).pipe(
     map((response)=> response as Cliente[])
     );
   } */
-  return this.http.get<Cliente[]>(this.urlEndPoint);
-  }
+  //return this.http.get<Cliente[]>(this.urlEndPoint);
+  
 
 
   create(cliente: Cliente) : Observable<Cliente> {
   
-    return this.http.post<Cliente>(this.urlEndPoint, cliente, {headers: this.httpHeaders}).pipe(
+    return this.http.post(this.urlEndPoint, cliente, {headers: this.httpHeaders}).pipe(
+      map((response: any) => response.cliente as Cliente),
       catchError(e => {
+        
+        if (e.status == 400) {
+          return throwError(() => new Error('test'));
+        }
+
         console.error(e.error.mensaje);
-        Swal.fire('Error al crear al cliente', e.error.mensaje, 'error');
+        Swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(() => new Error('test'));
 
       })
         
     );
-  }
+  } 
+
+
+
 
   /* getCliente(id:any): Observable<Cliente>{
     return this.http.get<Cliente>(`${this.urlEndPoint}/${id}`)
@@ -59,11 +105,16 @@ export class ClienteService {
     );
   }
 
-  update(cliente: Cliente): Observable<Cliente>{
-  return this.http.put<Cliente>(`${this.urlEndPoint}/${cliente.id}`, cliente, {headers: this.httpHeaders}).pipe(
+  update(cliente: Cliente): Observable<any>{
+  return this.http.put<any>(`${this.urlEndPoint}/${cliente.id}`, cliente, {headers: this.httpHeaders}).pipe(
     catchError(e => {
+
+      if (e.status == 400) {
+        return throwError(() => new Error('test'));
+      }
+      
       console.error(e.error.mensaje);
-      Swal.fire('Error al editar cliente', e.error.mensaje, 'error');
+      Swal.fire(e.error.mensaje, e.error.error, 'error');
       return throwError(() => new Error('test'));
 
     })
@@ -74,7 +125,7 @@ export class ClienteService {
   return this.http.delete<Cliente>(`${this.urlEndPoint}/${id}`, {headers: this.httpHeaders}).pipe(
     catchError(e => {
       console.error(e.error.mensaje);
-      Swal.fire('Error al eliminar cliente', e.error.mensaje, 'error');
+      Swal.fire(e.error.mensaje, e.error.error, 'error');
       return throwError(() => new Error('test'));
 
     })

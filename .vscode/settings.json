@@ -3,6 +3,8 @@
         "apellido",
         "Cliente",
         "clientes",
+        "errores",
+        "mensaje",
         "nombre",
         "Seguro",
         "Swal"
